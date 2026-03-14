@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Upwork Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #0c0c0f;
+    --surface:   #13131a;
+    --border:    #1e1e2a;
+    --border-hi: #2e2e40;
+    --text:      #e8e8f0;
+    --muted:     #6b6b88;
+    --accent:    #14f195;
+    --accent-dim:#0d9e62;
+    --upwork:    #6fda44;
+    --danger:    #ff4d6d;
+    --warn:      #ffb547;
+    --card-bg:   #16161f;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Scrollbar ─────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+  /* ── Layout ────────────────────────────────── */
+  #app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Nav ───────────────────────────────────── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .nav-logo span.dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 8px var(--accent);
+    display: inline-block; animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.8); }
+  }
+  .nav-user {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--muted);
+  }
+  .nav-user strong { color: var(--text); font-weight: 500; }
+  .btn-ghost {
+    background: none; border: 1px solid var(--border-hi); color: var(--muted);
+    padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    font-family: inherit; transition: all .15s;
+  }
+  .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+  /* ── Auth page ─────────────────────────────── */
+  #auth-page {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-box {
+    width: 100%; max-width: 400px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    animation: fadeUp .4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .auth-header {
+    padding: 32px 32px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .auth-header h1 {
+    font-size: 22px; font-weight: 600; letter-spacing: -0.03em;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .auth-header p { color: var(--muted); font-size: 13px; }
+
+  /* Tabs */
+  .auth-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    flex: 1; padding: 14px; background: none; border: none;
+    color: var(--muted); font-family: inherit; font-size: 13px; cursor: pointer;
+    position: relative; transition: color .15s;
+  }
+  .tab-btn.active { color: var(--text); }
+  .tab-btn.active::after {
+    content: ''; position: absolute; bottom: 0; left: 20%; right: 20%; height: 2px;
+    background: var(--accent); border-radius: 2px 2px 0 0;
+  }
+
+  .auth-body { padding: 28px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 5px; }
+  .field-group label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  input[type="text"], input[type="email"], input[type="password"] {
+    background: var(--bg); border: 1px solid var(--border-hi);
+    color: var(--text); padding: 10px 13px; border-radius: 8px;
+    font-family: 'DM Mono', monospace; font-size: 13px; outline: none;
+    transition: border-color .15s;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  .btn-primary {
+    background: var(--accent); color: #000; border: none;
+    padding: 11px; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--muted); font-size: 11px; letter-spacing: 0.08em;
+  }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background: var(--border); }
+
+  .error-msg {
+    background: rgba(255,77,109,.1); border: 1px solid rgba(255,77,109,.25);
+    color: var(--danger); border-radius: 7px; padding: 10px 13px;
+    font-size: 12px; display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ── Dashboard ─────────────────────────────── */
+  #dashboard-page { flex: 1; padding: 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  .page-title {
+    font-size: 20px; font-weight: 600; letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .page-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+  /* Search card */
+  .search-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px 24px; margin-bottom: 24px;
+  }
+  .search-row {
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  .search-row .field-group { flex: 1; }
+  .search-row input {
+    width: 100%; font-size: 14px; padding: 11px 14px;
+  }
+  .btn-search {
+    background: var(--accent); color: #000; border: none;
+    padding: 11px 22px; border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    white-space: nowrap; transition: opacity .15s;
+  }
+  .btn-search:hover { opacity: 0.85; }
+  .btn-search:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none; margin: 24px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Job result card */
+  .job-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    animation: fadeUp .35s ease;
+  }
+  .job-card-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .job-card-header .job-id {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--accent); margin-bottom: 6px; letter-spacing: 0.05em;
+  }
+  .job-card-header h2 {
+    font-size: 18px; font-weight: 600; letter-spacing: -0.02em;
+    line-height: 1.35;
+  }
+
+  .job-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .badge {
+    background: rgba(255,255,255,.04); border: 1px solid var(--border-hi);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .badge .label { color: var(--text); }
+  .badge.green { border-color: rgba(20,241,149,.2); color: var(--accent); background: rgba(20,241,149,.05); }
+
+  .job-body { padding: 20px 24px; }
+
+  .section-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px;
+  }
+  .description-text {
+    font-size: 13px; color: var(--text); line-height: 1.7;
+    max-height: 180px; overflow-y: auto;
+    white-space: pre-wrap; padding-right: 8px;
+  }
+  .skills-list {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px;
+  }
+  .skill-tag {
+    background: rgba(111,218,68,.07); border: 1px solid rgba(111,218,68,.2);
+    color: #9de87a; border-radius: 100px; padding: 3px 11px; font-size: 12px;
+  }
+
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-top: 16px;
+  }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+  .info-row {
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .info-row .key { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .info-row .val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); }
+
+  /* Upwork connect banner */
+  .connect-banner {
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .connect-banner.warn {
+    background: rgba(111,218,68,.05); border: 1px solid rgba(111,218,68,.2);
+  }
+  .connect-banner.expired {
+    background: rgba(255,77,109,.05); border: 1px solid rgba(255,77,109,.25);
+  }
+  .connect-banner p { font-size: 13px; color: var(--muted); }
+  .connect-banner.warn strong { color: var(--upwork); }
+  .connect-banner.expired strong { color: var(--danger); }
+  .btn-connect {
+    background: none; border: 1px solid var(--upwork); color: var(--upwork);
+    padding: 7px 16px; border-radius: 7px; cursor: pointer;
+    font-family: inherit; font-size: 12px; font-weight: 500; white-space: nowrap;
+    transition: all .15s;
+  }
+  .btn-connect:hover { background: rgba(111,218,68,.1); }
+  .btn-connect.danger { border-color: var(--danger); color: var(--danger); }
+  .btn-connect.danger:hover { background: rgba(255,77,109,.1); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Nav ── -->
+  <nav>
+    <div class="nav-logo">
+      <span class="dot"></span>
+      upwork / dashboard
+    </div>
+    <div id="nav-user-area" class="nav-user hidden">
+      <span>Signed in as <strong id="nav-username"></strong></span>
+      <button class="btn-ghost" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <!-- ── Auth Page ── -->
+  <div id="auth-page">
+    <div class="auth-box">
+      <div class="auth-header">
+        <h1>Welcome back</h1>
+        <p>Sign in to access job intelligence</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="tab-btn active" onclick="switchTab('login')">Sign in</button>
+        <button class="tab-btn" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Login form -->
+      <div id="form-login" class="auth-body">
+        <div id="login-error" class="error-msg"></div>
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com" />
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()">Sign in</button>
+      </div>
+
+      <!-- Register form -->
+      <div id="form-register" class="auth-body hidden">
+        <div id="register-error" class="error-msg"></div>
+        <div class="field-group">
+          <label>Username</label>
+          <input type="text" id="reg-username" placeholder="johndoe" />
+        </div>
+        <div class="field-group">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" />
+        </div>
+        <div class="field-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Min 8 characters" onkeydown="if(event.key==='Enter')doRegister()" />
+        </div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()">Create account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Dashboard ── -->
+  <div id="dashboard-page" class="hidden">
+    <div class="page-title">Job Intelligence</div>
+    <div class="page-sub">Enter an Upwork job ID to fetch live posting details</div>
+
+    <!-- Not connected -->
+    <div id="connect-upwork-banner" class="connect-banner warn hidden">
+      <p>Connect your <strong>Upwork account</strong> for authenticated API access</p>
+      <button class="btn-connect" onclick="connectUpwork()">Connect Upwork</button>
+    </div>
+
+    <!-- Token expired -->
+    <div id="expired-upwork-banner" class="connect-banner expired hidden">
+      <p><strong>Upwork token expired.</strong> Reconnect to continue fetching jobs.</p>
+      <button class="btn-connect danger" onclick="connectUpwork()">Reconnect Upwork</button>
+    </div>
+
+    <div class="search-card">
+      <div class="search-row">
+        <div class="field-group">
+          <label>Job ID</label>
+          <input type="text" id="job-id-input" placeholder="e.g. 2032480639478701974"
+            onkeydown="if(event.key==='Enter')lookupJob()" />
+        </div>
+        <button class="btn-search" id="btn-lookup" onclick="lookupJob()">Look up</button>
+      </div>
+      <div id="lookup-error" class="error-msg" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="spinner" id="spinner"></div>
+
+    <div id="job-result"></div>
+  </div>
+
+</div>
+
+<script>
+const API = (location.port === '8000' || location.port === '')
+  ? ''
+  : 'http://localhost:8000';
+
+// ── State ──────────────────────────────────────
+let currentUser = null;
+let authToken   = null;
+
+// ── Boot ───────────────────────────────────────
+(function init() {
+  const params   = new URLSearchParams(location.search);
+  const tkParam  = params.get('token');
+  const errParam = params.get('error');
+
+  if (tkParam) {
+    localStorage.setItem('token', tkParam);
+    history.replaceState({}, '', '/');
+  }
+
+  if (errParam) {
+    const desc = params.get('desc') || '';
+    alert('Upwork login failed: ' + errParam + (desc ? '\n\n' + desc : ''));
+    history.replaceState({}, '', '/');
+  }
+
+  const stored = localStorage.getItem('token');
+  if (stored) {
+    authToken = stored;
+    fetchMe();
+  } else {
+    showPage('auth');
+  }
+})();
+
+// ── API helpers ────────────────────────────────
+async function apiFetch(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const res = await fetch(API + path, { ...opts, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+  return data;
+}
+
+async function fetchMe() {
+  try {
+    currentUser = await apiFetch('/api/auth/me');
+    showPage('dashboard');
+  } catch {
+    logout();
+  }
+}
+
+// ── Auth ───────────────────────────────────────
+function showPage(name) {
+  document.getElementById('auth-page').classList.toggle('hidden', name !== 'auth');
+  document.getElementById('dashboard-page').classList.toggle('hidden', name !== 'dashboard');
+  document.getElementById('nav-user-area').classList.toggle('hidden', name !== 'dashboard');
+  if (name === 'dashboard' && currentUser) {
+    document.getElementById('nav-username').textContent = currentUser.username;
+    // Show connect banner only if no upwork token at all
+    if (!currentUser.upwork_user_id) {
+      document.getElementById('connect-upwork-banner').classList.remove('hidden');
+    }
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) =>
+    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'))
+  );
+  document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+}
+
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return setError('login-error', 'Please fill all fields.');
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  setError('login-error', '');
+  try {
+    const data = await apiFetch('/api/auth/login', {
+      method: 'POST', body: JSON.stringify({ email, password })
+    });
+    authToken = data.access_token;
+    localStorage.setItem('token', authToken);
+    currentUser = data.user;
+    showPage('dashboard');
+  } catch (e) {
+    setError('login-error', e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+}
+
+async function doRegister() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!username || !email || !password) return setError('register-error', 'Please fill all fields.');
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  setError('register-error', '');
+  try {
+    const data = await apiFetch('/api/auth/register', {
+      method: 'POST', body: JSON.stringify({ username, email, password })
+    });
+    authToken = data.access_token;
+    localStorage.setItem('token', authToken);
+    currentUser = data.user;
+    showPage('dashboard');
+  } catch (e) {
+    setError('register-error', e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create account';
+  }
+}
+
+async function connectUpwork() {
+  try {
+    const data = await apiFetch('/api/auth/upwork/authorize');
+    window.location.href = data.url;
+  } catch (e) {
+    alert('Could not start Upwork OAuth: ' + e.message);
+  }
+}
+
+// kept for backward compat
+async function loginWithUpwork() { await connectUpwork(); }
+
+function logout() {
+  authToken = null; currentUser = null;
+  localStorage.removeItem('token');
+  document.getElementById('job-result').innerHTML = '';
+  showPage('auth');
+}
+
+// ── Job Lookup ─────────────────────────────────
+async function lookupJob() {
+  const jobId = document.getElementById('job-id-input').value.trim();
+  if (!jobId) { setError('lookup-error', 'Enter a Job ID.'); return; }
+  setError('lookup-error', '');
+  document.getElementById('job-result').innerHTML = '';
+
+  const spinner = document.getElementById('spinner');
+  const btn = document.getElementById('btn-lookup');
+  spinner.style.display = 'block';
+  btn.disabled = true; btn.textContent = 'Fetching…';
+
+  try {
+    const job = await apiFetch('/api/jobs/lookup', {
+      method: 'POST', body: JSON.stringify({ job_id: jobId })
+    });
+    // If we got here successfully, hide expired banner
+    document.getElementById('expired-upwork-banner').classList.add('hidden');
+    renderJob(job);
+  } catch (e) {
+    // Show expired banner if token is invalid/expired
+    if (e.message.includes('invalid') || e.message.includes('expired') || e.message.includes('401')) {
+      document.getElementById('connect-upwork-banner').classList.add('hidden');
+      document.getElementById('expired-upwork-banner').classList.remove('hidden');
+    }
+    setError('lookup-error', e.message);
+  } finally {
+    spinner.style.display = 'none';
+    btn.disabled = false; btn.textContent = 'Look up';
+  }
+}
+
+function renderJob(job) {
+  const team   = job.ownership?.team?.name || '—';
+  const teamId = job.ownership?.team?.id   || '—';
+
+  document.getElementById('job-result').innerHTML = `
+    <div class="job-card">
+      <div class="job-card-header">
+        <div class="job-id">JOB_ID / ${job.id}</div>
+        <h2>${team}</h2>
+      </div>
+      <div class="job-body">
+        <div class="two-col">
+          <div class="info-row">
+            <span class="key">Client / Team</span>
+            <span class="val">${team}</span>
+          </div>
+          <div class="info-row">
+            <span class="key">Team ID</span>
+            <span class="val">${teamId}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
