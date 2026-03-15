@@ -6,5 +6,5 @@ services:
     env_file:
       - .env
     volumes:
-      - ./upwork_dashboard.db:/app/upwork_dashboard.db
+      - ./data:/app/data
     restart: unless-stopped
