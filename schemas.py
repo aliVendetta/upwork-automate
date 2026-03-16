@@ -25,6 +25,15 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class AdminResponse(BaseModel):
+    id: int
+    email: str
+    username: str
+    upwork_access_token: Optional[str]
+    upwork_user_id: Optional[str] = None
+    created_at: datetime
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

@@ -184,3 +184,7 @@ async def upwork_callback(
 async def get_me(current_user: models.User = Depends(get_current_user)):
     return current_user
 
+@router.get("/admin", response_model=schemas.AdminResponse)
+async def get_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
